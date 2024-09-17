@@ -96,9 +96,9 @@ generate
     assign Y_shr = Y[i]>>>(i);
     assign Z_sign = Z[i][31];
     always @(posedge master_clk) begin
-      X[i+1] <= Z_sign ? X[i] + Y_shr         : X[i] - Y_shr;
-      Y[i+1] <= Z_sign ? Y[i] - X_shr         : Y[i] + X_shr;
-      Z[i+1] <= Z_sign ? Z[i] + arctan[i]     : Z[i] - arctan[i];
+      X[i+1] <= Z_sign ? X[i] + Y_shr     : X[i] - Y_shr;
+      Y[i+1] <= Z_sign ? Y[i] - X_shr     : Y[i] + X_shr;
+      Z[i+1] <= Z_sign ? Z[i] + arctan[i] : Z[i] - arctan[i];
     end
   end
 endgenerate
