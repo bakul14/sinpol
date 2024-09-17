@@ -21,8 +21,8 @@
 
 
 module sinpol(master_clk,angle,Xin,Yin,Xout,Yout);
-parameter BW=32;
-localparam iter=BW;
+parameter BW = 32;
+localparam iter = BW;
 input master_clk;
 input signed [31:0] angle;
 input signed [BW-1:0] Xin;
@@ -30,7 +30,6 @@ input signed [BW-1:0] Yin;
 output signed [BW:0] Xout;
 output signed [BW:0] Yout;
 wire signed [31:0] taninv[0:30];
-//reg taninv [31:0] [0:30];
 assign taninv[0] = 32'b00100000000000000000000000000000;
 assign taninv[1] = 32'b00010010111001000000010100011110;
 assign taninv[2] = 32'b00001001111110110011100001011011;
@@ -67,45 +66,43 @@ reg signed [BW:0] Y [0:iter-1];
 reg signed [31:0] Z [0:iter-1];
 wire [1:0] quadrant;
 assign quadrant=angle[31:30];
-always @(posedge master_clk)
-  begin
-    case(quadrant)
-      2'b00,2'b11: begin
-        X[0]<=Xin;
-        Y[0]<=Yin;
-        Z[0]<=angle;
-      end
-            2'b01:
-                begin
-                    X[0] <= -Yin;
-                    Y[0] <= Xin;
-                    Z[0] <= {2'b00,angle[29:0]};
-                end
-            2'b10:
-                begin
-                    X[0] <= Yin;
-                    Y[0] <= -Xin;
-                    Z[0] <= {2'b11,angle[29:0]};
-                end
-         endcase
+
+always @(posedge master_clk) begin
+  case(quadrant)
+    2'b00,2'b11: begin
+      X[0] <= Xin;
+      Y[0] <= Yin;
+      Z[0] <= angle;
     end
+    2'b01: begin
+      X[0] <= -Yin;
+      Y[0] <= Xin;
+      Z[0] <= {2'b00,angle[29:0]};
+    end
+    2'b10: begin
+      X[0] <= Yin;
+      Y[0] <= -Xin;
+      Z[0] <= {2'b11,angle[29:0]};
+    end
+  endcase
+end
+
 genvar i;
 generate
-    for(i=0;i<(iter-1);i=i+1)
-        begin: XYZ
-            wire Z_sign;
-            wire [BW:0] X_shr,Y_shr;
-            assign X_shr=X[i]>>>(i);
-            assign Y_shr=Y[i]>>>(i);
-            assign Z_sign=Z[i][31];
-            always @(posedge master_clk)
-                begin
-                    X[i+1] <= Z_sign ? X[i] + Y_shr         : X[i] - Y_shr;
-                    Y[i+1] <= Z_sign ? Y[i] - X_shr         : Y[i] + X_shr;
-                    Z[i+1] <= Z_sign ? Z[i] + taninv[i] : Z[i] - taninv[i];
-                end
-        end
+  for(i=0;i<(iter-1);i=i+1) begin: XYZ
+    wire Z_sign;
+    wire [BW:0] X_shr,Y_shr;
+    assign X_shr=X[i]>>>(i);
+    assign Y_shr=Y[i]>>>(i);
+    assign Z_sign=Z[i][31];
+    always @(posedge master_clk) begin
+      X[i+1] <= Z_sign ? X[i] + Y_shr         : X[i] - Y_shr;
+      Y[i+1] <= Z_sign ? Y[i] - X_shr         : Y[i] + X_shr;
+      Z[i+1] <= Z_sign ? Z[i] + taninv[i]     : Z[i] - taninv[i];
+    end
+  end
 endgenerate
-assign Xout=X[iter-1];
-assign Yout=Y[iter-1];
+
+assign Xout = X[iter-1];
+assign Yout = Y[iter-1];
 endmodule

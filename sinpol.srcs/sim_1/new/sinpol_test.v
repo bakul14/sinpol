@@ -19,9 +19,8 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
-
 module sinpol_test();
-localparam BW=32;
+localparam BW = 32;
 real cos,sin;
 reg [BW-1:0] Xin,Yin;
 reg  [31:0] angle;
@@ -31,7 +30,7 @@ localparam FALSE = 1'b0;
 localparam TRUE = 1'b1;
 
 localparam VALUE = 32'b01001101101110100111011011010100; 
-localparam sf=2.0**(-31.0); 
+localparam sf = 2.0**(-31.0); 
 
 reg signed [63:0] i;
 reg      start;
@@ -48,16 +47,16 @@ begin
   @(posedge master_clk);
   start = TRUE;
     
-  for (i = 0; i < 720; i = i + 1)     
+  for (i = 0; i < 7200; i = i + 1)     
      
   begin
     @(posedge master_clk);
     start = FALSE;
-    angle = ((1 << 32)*i)/360;    
+    angle = ((1 << 32) * i) / 360;    
     $display ("angle = %d, %h",i, angle);
     cos= (($itor(Xout))*sf);
     sin= (($itor(Yout))*sf);
-    #(32*timeperiod)
+    #(32 * timeperiod)
     $display("Cos= %f ,Sin= %f",cos,sin); 
   end
 
@@ -75,10 +74,9 @@ begin
   master_clk = 1'b0;
   $display ("master_clk started");
   #5;
-  forever
-  begin
-    #(timeperiod/2) master_clk = 1'b1;
-    #(timeperiod/2) master_clk = 1'b0;
+  forever begin
+    #(timeperiod / 2) master_clk = 1'b1;
+    #(timeperiod / 2) master_clk = 1'b0;
   end
 end
 
