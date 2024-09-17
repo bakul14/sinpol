@@ -21,8 +21,7 @@ initial begin
 end
 
 // The 7-order Taylor-polynomial function to calculate sin() 
-function real sin;
-input real radian;
+function real sin(input real radian);
 real targetAngle, y, y2, y3, y5, y7, sum, sign;
   begin
     sign = 1.0;
