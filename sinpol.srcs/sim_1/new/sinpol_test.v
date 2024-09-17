@@ -20,9 +20,22 @@ initial begin
   reset = 0;
 end
 
+// Функция для вычисления факториала
+function integer factorial(input integer n);
+  integer i, f;
+  begin
+    f = 1;
+    for (i = 1; i <= n; i = i + 1) begin
+      f = f * i;
+    end
+    factorial = f;
+  end
+endfunction
+
 // The 7-order Taylor-polynomial function to calculate sin() 
 function real sin(input real radian);
-real targetAngle, y, y2, y3, y5, y7, sum, sign;
+real targetAngle, x, x2, x3, x5, x7, sum, sign;
+integer i;
   begin
     sign = 1.0;
     targetAngle = radian;
@@ -30,12 +43,11 @@ real targetAngle, y, y2, y3, y5, y7, sum, sign;
       targetAngle = targetAngle - M_PI;
       sign = -1.0 * sign;
     end
-    y = targetAngle * 2 / M_PI;
-    y2 = y * y;
-    y3 = y * y2;
-    y5 = y3 * y2;
-    y7 = y5 * y2;
-    sum = (1.570794 * y) - (0.645962 * y3) + (0.079692 * y5) - (0.004681712 * y7);
+    x = targetAngle * 2 / M_PI;
+    sum = 0;
+    for (i = 0; i < 10; i = i + 1) begin
+      sum = sum + ((targetAngle**(2 * i + 1)) / factorial(2 * i + 1)) * ((i % 2 == 0) ? 1 : -1);
+    end
     sin = sign * sum;
   end
 endfunction
