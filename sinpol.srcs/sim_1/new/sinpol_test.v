@@ -4,7 +4,7 @@ module sinpol_test();
 
 /// Global constants
 localparam M_PI = 3.1415926535;
-localparam SIN_AMPL = 100;
+localparam SIN_AMPL = 10000;
 
 //assume basic clock is 10Mhz
 reg clk;
@@ -29,7 +29,7 @@ real x1, y, y2, y3, y5, y7, sum, sign;
   begin
     sign = 1.0;
     x1 = x;
-    if (x1<0) begin
+    if (x1 < 0) begin
       x1 = -x1;
       sign = -1.0;
     end
@@ -43,7 +43,7 @@ real x1, y, y2, y3, y5, y7, sum, sign;
     y5 = y3 * y2;
     y7 = y5 * y2;
     sum = (1.570794 * y) - (0.645962 * y3) + (0.079692 * y5) - (0.004681712 * y7);
-    sin = sign*sum;
+    sin = sign * sum;
   end
 endfunction
 
