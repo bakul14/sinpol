@@ -89,12 +89,12 @@ end
 
 genvar i;
 generate
-  for(i=0;i<(iter-1);i=i+1) begin: XYZ
+  for(i = 0; i < (iter - 1); i = i + 1) begin: XYZ
     wire Z_sign;
     wire [BW:0] X_shr,Y_shr;
-    assign X_shr=X[i]>>>(i);
-    assign Y_shr=Y[i]>>>(i);
-    assign Z_sign=Z[i][31];
+    assign X_shr = X[i]>>>(i);
+    assign Y_shr = Y[i]>>>(i);
+    assign Z_sign = Z[i][31];
     always @(posedge master_clk) begin
       X[i+1] <= Z_sign ? X[i] + Y_shr         : X[i] - Y_shr;
       Y[i+1] <= Z_sign ? Y[i] - X_shr         : Y[i] + X_shr;
