@@ -1,101 +1,85 @@
-`timescale 1us / 1ns
+`timescale 1ns / 100ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: 
+// Engineer: 
+// 
+// Create Date: 17.09.2024 22:20:31
+// Design Name: 
+// Module Name: cordic_test
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
+// Dependencies: 
+// 
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+// 
+//////////////////////////////////////////////////////////////////////////////////
+
 
 module sinpol_test();
+localparam BW=32;
+real cos,sin;
+reg [BW-1:0] Xin,Yin;
+reg  [31:0] angle;
+wire signed [BW:0] Xout, Yout;
+reg master_clk;
+localparam FALSE = 1'b0;
+localparam TRUE = 1'b1;
 
-/// Global constants
-localparam M_PI = 3.1415926535;
-localparam SIN_AMPL = 10000;
-localparam FREQ_DIVIDER = 64;
+localparam VALUE = 32'b01001101101110100111011011010100; 
+localparam sf=2.0**(-31.0); 
 
-// Set basic clock as a 10 MHz square wave signal
-reg clk;
-initial clk = 0;
-always #0.05 clk = ~clk;
-
-// Generate reset signal at begin of the simulation
-reg reset;
-initial begin
-  reset = 1;
-  #0.1;
-  reset = 0;
-end
-
-// Function to calculate number factorial
-function integer factorial(input integer n);
-  integer i, f;
-  begin
-    f = 1;
-    for (i = 1; i <= n; i = i + 1) begin
-      f = f * i;
-    end
-    factorial = f;
-  end
-endfunction
-
-// The 7-order Taylor-polynomial function to calculate sin() 
-function real sin(input real radian);
-real targetAngle, x, x2, x3, x5, x7, sum, sign;
-integer i;
-  begin
-    sign = 1.0;
-    targetAngle = radian;
-    while (targetAngle > M_PI / 2.0) begin
-      targetAngle = targetAngle - M_PI;
-      sign = -1.0 * sign;
-    end
-    x = targetAngle * 2 / M_PI;
-    sum = 0;
-    for (i = 0; i < 10; i = i + 1) begin
-      sum = sum + ((targetAngle**(2 * i + 1)) / factorial(2 * i + 1)) * ((i % 2 == 0) ? 1 : -1);
-    end
-    sin = sign * sum;
-  end
-endfunction
-
-//generate requested "freq" digital
-integer requestedFrequency;
-reg [31:0]cnt;
-reg resolver;
-always @(posedge clk or posedge reset)
+reg signed [63:0] i;
+reg      start;
+initial
 begin
-  if(reset) begin
-    cnt <= 0;
-    resolver <= 1'b0;
+  start = FALSE;
+  $write("Starting sim");
+  master_clk = 1'b0;
+  angle = 0;
+  Xin = VALUE;                     
+  Yin = 1'd0;                      
+
+  #1000;
+  @(posedge master_clk);
+  start = TRUE;
+    
+  for (i = 0; i < 720; i = i + 1)     
+     
+  begin
+    @(posedge master_clk);
+    start = FALSE;
+    angle = ((1 << 32)*i)/360;    
+    $display ("angle = %d, %h",i, angle);
+    cos= (($itor(Xout))*sf);
+    sin= (($itor(Yout))*sf);
+    #(32*timeperiod)
+    $display("Cos= %f ,Sin= %f",cos,sin); 
   end
-  else if (cnt >= (10000000 / (requestedFrequency * FREQ_DIVIDER) - 1) ) begin
-    cnt <= 0;
-    resolver <= 1'b1;
-  end
-  else begin
-    cnt <= cnt + 1;
-    resolver <= 1'b0;
-  end
+
+  #500
+  $write("Simulation has finished");
+  $finish;
 end
 
-//generate requested "freq" sinus
-real monotonicTime;
-reg unsigned [15:0]sinValue;
-always @(posedge resolver)
-begin
-  sinValue <= sin(monotonicTime) * SIN_AMPL;
-  monotonicTime  <= monotonicTime + (M_PI * 2 / FREQ_DIVIDER);
-end
+sinpol sin_cos (master_clk, angle, Xin, Yin, Xout, Yout);
+
+parameter timeperiod = 10;  
 
 initial
 begin
-  $dumpfile("out.vcd");
-  $dumpvars(0,sinpol_test);
-
-  monotonicTime = 0;
-
-  // Set different frequencies to validate generated sin()
-  requestedFrequency=500;
-  #10000;
-  requestedFrequency=1000;
-  #10000;
-  requestedFrequency=1500;
-  #10000;
-
-  $finish;
+  master_clk = 1'b0;
+  $display ("master_clk started");
+  #5;
+  forever
+  begin
+    #(timeperiod/2) master_clk = 1'b1;
+    #(timeperiod/2) master_clk = 1'b0;
+  end
 end
+
 endmodule
