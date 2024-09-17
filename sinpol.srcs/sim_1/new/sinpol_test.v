@@ -5,13 +5,14 @@ module sinpol_test();
 /// Global constants
 localparam M_PI = 3.1415926535;
 localparam SIN_AMPL = 10000;
+localparam FREQ_DIVIDER = 64;
 
-//assume basic clock is 10Mhz
+// Set basic clock as a 10 MHz square wave signal
 reg clk;
 initial clk = 0;
 always #0.05 clk = ~clk;
 
-// make reset signal at begin of simulation
+// Generate reset signal at begin of the simulation
 reg reset;
 initial begin
   reset = 1;
@@ -19,18 +20,18 @@ initial begin
   reset = 0;
 end
 
-// function calculating sinus
+// The 7-order Taylor-polynomial function to calculate sin() 
 function real sin;
-input real x;
-real radian, y, y2, y3, y5, y7, sum, sign;
+input real radian;
+real targetAngle, y, y2, y3, y5, y7, sum, sign;
   begin
     sign = 1.0;
-    radian = x;
-    while (radian > M_PI / 2.0) begin
-      radian = radian - M_PI;
+    targetAngle = radian;
+    while (targetAngle > M_PI / 2.0) begin
+      targetAngle = targetAngle - M_PI;
       sign = -1.0 * sign;
     end
-    y = radian * 2 / M_PI;
+    y = targetAngle * 2 / M_PI;
     y2 = y * y;
     y3 = y * y2;
     y5 = y3 * y2;
@@ -41,45 +42,47 @@ real radian, y, y2, y3, y5, y7, sum, sign;
 endfunction
 
 //generate requested "freq" digital
-integer freq;
+integer requestedFrequency;
 reg [31:0]cnt;
-reg cnt_edge;
+reg resolver;
 always @(posedge clk or posedge reset)
 begin
   if(reset) begin
     cnt <= 0;
-    cnt_edge <= 1'b0;
+    resolver <= 1'b0;
   end
-  else if( cnt >= (10000000 / (freq * 64) - 1) ) begin
+  else if (cnt >= (10000000 / (requestedFrequency * FREQ_DIVIDER) - 1) ) begin
     cnt <= 0;
-    cnt_edge <= 1'b1;
+    resolver <= 1'b1;
   end
   else begin
-    cnt<=cnt+1;
-    cnt_edge <= 1'b0;
+    cnt <= cnt + 1;
+    resolver <= 1'b0;
   end
 end
 
 //generate requested "freq" sinus
 real monotonicTime;
 reg unsigned [15:0]sinValue;
-always @(posedge cnt_edge)
+always @(posedge resolver)
 begin
   sinValue <= sin(monotonicTime) * SIN_AMPL;
-  monotonicTime  <= monotonicTime + (M_PI * 2 / 64);
+  monotonicTime  <= monotonicTime + (M_PI * 2 / FREQ_DIVIDER);
 end
 
 initial
 begin
   $dumpfile("out.vcd");
   $dumpvars(0,sinpol_test);
+
   monotonicTime = 0;
 
-  freq=500;
+  // Set different frequencies to validate generated sin()
+  requestedFrequency=500;
   #10000;
-  freq=1000;
+  requestedFrequency=1000;
   #10000;
-  freq=1500;
+  requestedFrequency=1500;
   #10000;
 
   $finish;
