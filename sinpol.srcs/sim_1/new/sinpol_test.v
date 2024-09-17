@@ -8,14 +8,12 @@ localparam SIN_AMPL = 10000;
 
 //assume basic clock is 10Mhz
 reg clk;
-initial clk=0;
-always
-  #0.05 clk = ~clk;
+initial clk = 0;
+always #0.05 clk = ~clk;
 
 // make reset signal at begin of simulation
 reg reset;
-initial
-begin
+initial begin
   reset = 1;
   #0.1;
   reset = 0;
@@ -23,21 +21,16 @@ end
 
 // function calculating sinus
 function real sin;
-input x;
-real x;
-real x1, y, y2, y3, y5, y7, sum, sign;
+input real x;
+real radian, y, y2, y3, y5, y7, sum, sign;
   begin
     sign = 1.0;
-    x1 = x;
-    if (x1 < 0) begin
-      x1 = -x1;
-      sign = -1.0;
-    end
-    while (x1 > M_PI / 2.0) begin
-      x1 = x1 - M_PI;
+    radian = x;
+    while (radian > M_PI / 2.0) begin
+      radian = radian - M_PI;
       sign = -1.0 * sign;
     end
-    y = x1 * 2 / M_PI;
+    y = radian * 2 / M_PI;
     y2 = y * y;
     y3 = y * y2;
     y5 = y3 * y2;
@@ -54,11 +47,11 @@ reg cnt_edge;
 always @(posedge clk or posedge reset)
 begin
   if(reset) begin
-    cnt <=0;
+    cnt <= 0;
     cnt_edge <= 1'b0;
   end
-  else if( cnt>=(10000000/(freq*64)-1) ) begin
-    cnt<=0;
+  else if( cnt >= (10000000 / (freq * 64) - 1) ) begin
+    cnt <= 0;
     cnt_edge <= 1'b1;
   end
   else begin
@@ -69,7 +62,7 @@ end
 
 //generate requested "freq" sinus
 real monotonicTime;
-reg signed [15:0]sinValue;
+reg unsigned [15:0]sinValue;
 always @(posedge cnt_edge)
 begin
   sinValue <= sin(monotonicTime) * SIN_AMPL;
