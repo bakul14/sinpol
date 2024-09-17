@@ -20,7 +20,7 @@ initial begin
   reset = 0;
 end
 
-// Функция для вычисления факториала
+// Function to calculate number factorial
 function integer factorial(input integer n);
   integer i, f;
   begin
